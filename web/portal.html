@@ -743,13 +743,24 @@
       });
 
       const videoDownloadForm = document.getElementById('video-download-form');
+      const downloadResult = document.getElementById('download-result');
+      const downloadStatus = document.getElementById('download-status');
+      const downloadLink = document.getElementById('download-link');
 
-      videoDownloadForm.addEventListener('submit', (e) => {
+      videoDownloadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const formData = new FormData(videoDownloadForm);
         const url = formData.get('url');
         const quality = formData.get('quality');
+        const submitButton = videoDownloadForm.querySelector('button[type="submit"]');
+
+        // Show loading state
+        submitButton.disabled = true;
+        submitButton.textContent = 'Processing...';
+        downloadResult.classList.remove('hidden');
+        downloadStatus.textContent = 'Fetching download link, please wait...';
+        downloadLink.classList.add('hidden');
 
         let apiUrl = '';
         if (url.includes('facebook.com') || url.includes('fb.watch')) {
@@ -758,7 +769,24 @@
           apiUrl = `/api/video-dl?url=${encodeURIComponent(url)}&quality=${quality}`;
         }
 
-        window.location.href = apiUrl;
+        try {
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+            if (data.url || data.download_url) {
+                downloadStatus.textContent = 'Your download is ready!';
+                const downloadUrl = data.url || data.download_url;
+                window.location.href = downloadUrl;
+            } else {
+                downloadStatus.textContent = `Error: ${data.error || 'Could not retrieve download link.'}`;
+            }
+        } catch (error) {
+            downloadStatus.textContent = 'An unexpected error occurred. Please try again later.';
+        } finally {
+            // Restore button state
+            submitButton.disabled = false;
+            submitButton.textContent = 'Download Video';
+        }
       });
     });
   </script>

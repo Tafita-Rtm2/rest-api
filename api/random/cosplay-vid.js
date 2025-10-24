@@ -4,7 +4,7 @@ module.exports = {
   meta: {
     name: "Cosplay (Video)",
     description: "Fetch random cosplay videos",
-    author: "rapido",
+    author: "RTM",
     version: "1.0.0",
     category: "random",
     method: "GET",

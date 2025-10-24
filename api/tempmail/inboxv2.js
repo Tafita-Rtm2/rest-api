@@ -4,7 +4,7 @@ const meta = {
   name: "Inbox V2",
   version: "1.0.0",
   description: "Check temporary email inbox",
-  author: "rapido (jm)",
+  author: "RTM (jm)",
   method: "get",
   category: "tempmail",
   path: "/tempmail/inboxv2?token="

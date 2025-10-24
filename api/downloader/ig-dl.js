@@ -6,7 +6,7 @@ module.exports = {
     name: "Instagram Downloader",
     version: "1.0.0",
     description: "Download Instagram videos and reels without watermark",
-    author: "rapido",
+    author: "RTM",
     path: "/igdl?url=",
     method: "get",
     category: "downloader"
@@ -40,10 +40,14 @@ module.exports = {
         return res.status(404).json({ error: "Video not found or private" });
       }
       
+      const title = "instagram_video";
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(videoUrl)}&title=${encodeURIComponent(title)}`;
+
       res.json({
         success: true,
-        videoUrl: videoUrl,
-        thumbnail: thumbnail
+        url: proxyUrl,
+        thumbnail: thumbnail,
+        title: title
       });
       
     } catch (error) {

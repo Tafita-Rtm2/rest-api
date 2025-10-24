@@ -3,7 +3,7 @@ const axios = require('axios');
 const meta = {
     name: "Image Colorizer",
     version: "1.0.0",
-    author: "rapido",
+    author: "RTM",
     category: "tools",
     method: "GET",
     path: "/colorize-image?imageUrl="

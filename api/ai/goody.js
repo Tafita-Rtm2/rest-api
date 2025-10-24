@@ -3,7 +3,7 @@ const axios = require('axios');
 const meta = {
     name: "goody",
     version: "1.0.0",
-    author: "rapido",
+    author: "RTM",
     description: "Generate responses using GoodyAI",
     method: "get",
     category: "ai",

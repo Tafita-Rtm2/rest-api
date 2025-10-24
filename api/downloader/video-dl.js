@@ -5,7 +5,7 @@ module.exports = {
     name: "Video Downloader",
     version: "1.0.0",
     description: "Download videos from various sources with different quality options.",
-    author: "rapido",
+    author: "RTM",
     path: "/video-dl",
     method: "get",
     category: "downloader"
@@ -32,7 +32,7 @@ module.exports = {
           status: true,
           title: info.videoDetails.title,
           thumbnail: info.videoDetails.thumbnails[0].url,
-          download_url: proxyUrl
+          url: proxyUrl
         });
       } else {
         res.status(404).json({ error: `Quality ${quality} not found for this video.` });

@@ -5,7 +5,7 @@ module.exports = {
     name: "Download Proxy",
     version: "1.0.0",
     description: "Proxies a video URL to force a download.",
-    author: "rapido",
+    author: "RTM",
     method: "get",
     category: "downloader",
     path: "/proxy"

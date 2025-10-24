@@ -3,7 +3,7 @@ const axios = require("axios");
 const meta = {
     name: "waifu",
     version: "1.0.0",
-    author: "rapido",
+    author: "RTM",
     description: "Get random waifu images",
     method: "get",
     category: "anime",

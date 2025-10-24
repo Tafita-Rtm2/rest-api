@@ -5,7 +5,7 @@ module.exports = {
     name: "TikTok Downloader V2",
     version: "1.0.0",
     description: "Download TikTok videos without watermark",
-    author: "rapido",
+    author: "RTM",
     path: "/tikdl-v2?url=",
     method: "get",
     category: "downloader"
@@ -22,12 +22,15 @@ module.exports = {
       const data = response.data.data;
       
       
+      const { title, play } = data;
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(play)}&title=${encodeURIComponent(title)}`;
+
       res.json({
         success: true,
         id: data.id,
         title: data.title,
         duration: data.duration,
-        play: data.play,
+        url: proxyUrl,
         wmplay: data.wmplay,
         music: data.music,
         author: data.author,

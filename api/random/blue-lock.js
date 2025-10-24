@@ -5,7 +5,7 @@ module.exports = {
 		name: "Blue lock Edit",
 		version: "1.0.0",
 		description: "Get random Blue lock TikTok videos",
-		author: "rapido",
+		author: "RTM",
 		path: "/blue-lock",
 		method: "get",
 		category: "random"

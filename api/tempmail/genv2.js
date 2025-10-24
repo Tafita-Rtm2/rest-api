@@ -4,7 +4,7 @@ const meta = {
   name: "Gen V2",
   version: "1.0.0",
   description: "Generate temporary email accounts",
-  author: "rapido (jm)",
+  author: "RTM (jm)",
   method: "get",
   category: "tempmail",
   path: "/tempmail/genv2"

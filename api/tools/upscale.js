@@ -3,7 +3,7 @@ const axios = require('axios');
 const meta = {
     name: "Upscale Image",
     version: "1.0.0",
-    author: "rapido",
+    author: "RTM",
     category: "tools",
     method: "GET",
     path: "/upscale-image?imageUrl=https://www.thispersondoesnotexist.com"

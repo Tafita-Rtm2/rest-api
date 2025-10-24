@@ -6,7 +6,7 @@ module.exports = {
     name: "Pinterest Downloader",
     version: "1.0.0",
     description: "Download Pinterest videos",
-    author: "rapido",
+    author: "RTM",
     path: "/pindl?url=",
     method: "get",
     category: "downloader"
@@ -44,13 +44,15 @@ module.exports = {
       
       const data = response.data.data;
       
+      const { title, video } = data;
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(video)}&title=${encodeURIComponent(title)}`;
+
       res.json({
         success: true,
         mediaType: data.media_type,
-        url: data.pin_url,
+        url: proxyUrl,
         poster: data.poster,
-        video: data.video,
-        title: data.title
+        title: title
       });
       
     } catch (error) {

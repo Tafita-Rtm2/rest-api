@@ -5,7 +5,7 @@ module.exports = {
     name: "Honkai Edit",
     version: "1.0.0",
     description: "Get random Honkai StartRail TikTok videos",
-    author: "rapido",
+    author: "RTM",
     path: "/honkai",
     method: "get",
     category: "random"

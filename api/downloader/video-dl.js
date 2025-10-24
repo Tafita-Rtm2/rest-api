@@ -15,11 +15,11 @@ module.exports = {
     const quality = req.query.quality ? `${req.query.quality}p` : 'highest';
 
     if (!videoUrl) {
-      return res.status(400).json({ error: "Video URL is required" });
+      return res.status(400).send("Video URL is required");
     }
 
     if (!ytdl.validateURL(videoUrl)) {
-      return res.status(400).json({ error: "Invalid YouTube URL" });
+      return res.status(400).send("Invalid YouTube URL");
     }
 
     try {
@@ -27,17 +27,13 @@ module.exports = {
       const format = ytdl.chooseFormat(info.formats, { quality: quality === 'highest' ? 'highestvideo' : quality });
 
       if (format) {
-        res.json({
-          status: true,
-          title: info.videoDetails.title,
-          thumbnail: info.videoDetails.thumbnails[0].url,
-          download_url: format.url
-        });
+        res.setHeader('Content-Disposition', `attachment; filename="${info.videoDetails.title}.mp4"`);
+        ytdl(videoUrl, { format: format }).pipe(res);
       } else {
-        res.status(404).json({ error: `Quality ${quality} not found for this video.` });
+        res.status(404).send(`Quality ${quality} not found for this video.`);
       }
     } catch (error) {
-      res.status(500).json({ error: "An error occurred while trying to download the video.", message: error.message });
+      res.status(500).send(`An error occurred while trying to download the video: ${error.message}`);
     }
   }
 };

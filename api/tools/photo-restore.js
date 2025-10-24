@@ -3,7 +3,7 @@ const axios = require('axios');
 const meta = {
     name: "Old Photo Restoration",
     version: "1.0.0",
-    author: "rapido",
+    author: "RTM",
     category: "tools",
     method: "GET",
     path: "/restore?imageUrl="

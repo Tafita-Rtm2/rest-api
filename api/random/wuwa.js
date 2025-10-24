@@ -5,7 +5,7 @@ module.exports = {
 		name: "Wuwa Edit",
 		version: "1.0.0",
 		description: "Get random Wuwa TikTok videos",
-		author: "rapido",
+		author: "RTM",
 		path: "/wuwa",
 		method: "get",
 		category: "random"

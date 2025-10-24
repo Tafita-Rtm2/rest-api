@@ -5,7 +5,7 @@ module.exports = {
     name: "YouTube Downloader",
     version: "1.0.0",
     description: "Download YouTube videos",
-    author: "rapido",
+    author: "RTM",
     path: "/ytdl?url=https://youtu.be/Rht8rS4cR1s?feature=shared&type=mp4",
     method: "get",
     category: "downloader"
@@ -37,11 +37,20 @@ module.exports = {
       const mp4720p = videoData.medias.find(m => m.ext === "mp4" && m.quality.includes("720p"));
       const mp3 = audioData.medias.find(m => m.is_audio);
       
+      const title = videoData.title;
+      const video = mp4720p || videoData.medias.find(m => m.ext === "mp4");
+
+      if (!video) {
+        return res.status(404).json({ error: "No MP4 video found" });
+      }
+
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(video.url)}&title=${encodeURIComponent(title)}`;
+
       return res.json({
         title: videoData.title,
         thumbnail: videoData.thumbnail,
         duration: videoData.duration,
-        url: mp3 ? mp3.url : null
+        url: proxyUrl
       });
       
     } catch (error) {

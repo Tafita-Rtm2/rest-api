@@ -5,7 +5,7 @@ module.exports = {
     name: "X Downloader",
     version: "1.0.0",
     description: "Download X videos",
-    author: "rapido",
+    author: "RTM",
     path: "/xdl?url=",
     method: "get",
     category: "downloader"
@@ -40,11 +40,14 @@ module.exports = {
       const tinyThumbResponse = await axios.get(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(thumbnail)}`);
       
       
+      const title = data.title;
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(tinyUrlResponse.data)}&title=${encodeURIComponent(title)}`;
+
       res.json({
         success: true,
         title: data.title,
         description: data.description,
-        videoUrl: tinyUrlResponse.data,
+        url: proxyUrl,
         thumbnail: tinyThumbResponse.data
       });
       

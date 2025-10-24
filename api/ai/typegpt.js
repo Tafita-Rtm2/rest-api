@@ -11,30 +11,29 @@ const meta = {
 
 const models = {
   "data": [
-    {"id": "deepseek-r1-0528-turbo"},
-    {"id": "kimi-k2-eco"},
-    {"id": "glm-4.5"},
-    {"id": "llama-4-scout"},
-    {"id": "qwen3-coder"},
-    {"id": "kimi-k2-turbo"},
-    {"id": "llama3.1-8b"},
-    {"id": "deepseek-v3-0324"},
-    {"id": "deepseek-r1-distill-qwen-32b"},
-    {"id": "qwen3-235b-a22b"},
-    {"id": "qwen3-coder-turbo"},
-    {"id": "deepseek-v3-0324-turbo"},
-    {"id": "kimi-k2"},
-    {"id": "gpt-oss-120b"},
-    {"id": "gemma-3-27b-it"},
-    {"id": "llama3.3-70b"},
-    {"id": "deepseek-r1-0528"},
-    {"id": "qwen3-235b-a22b-2507-instruct"},
-    {"id": "qwen3-235b-a22b-2507-thinking"},
-    {"id": "qwen3-235b-a22b-2507-thinking-turbo"},
-    {"id": "multilingual-e5-large-instruct"},
-    {"id": "gemma-3n-e4b-it"},
-    {"id": "deepseek-r1-distill-llama-70b"},
-    {"id": "deepseek-v3.1"}
+    {"id": "deepseek-ai/DeepSeek-V3.1"},
+    {"id": "qwen/qwen2.5-7b-instruct/bf-16"},
+    {"id": "Qwen/Qwen3-235B-A22B-Thinking-2507-FP8"},
+    {"id": "Qwen/Qwen3-235B-A22B-Thinking-2507"},
+    {"id": "Qwen/Qwen3-30B-A3B-Instruct-2507"},
+    {"id": "Qwen/Qwen3-30B-A3B-Thinking-2507"},
+    {"id": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8"},
+    {"id": "Qwen/Qwen3-Next-80B-A3B-Thinking"},
+    {"id": "Qwen/Qwen3-Next-80B-A3B-Instruct"},
+    {"id": "Qwen/QWQ-32B"},
+    {"id": "zai-org/GLM-4.6"},
+    {"id": "zai-org/GLM-4.5-Air-FP8"},
+    {"id": "deepseek-ai/DeepSeek-V3.2-Exp"},
+    {"id": "NAI/Uncensored-R1"},
+    {"id": "openai/gpt-oss-20b"},
+    {"id": "openai/gpt-oss-120b"},
+    {"id": "meta-llama/llama-3.1-8b-instruct/fp-16"},
+    {"id": "mistralai/mistral-nemo-12b-instruct/fp-8"},
+    {"id": "deepseek-ai/DeepSeek-R1-Distill-Llama-70B"},
+    {"id": "meta-llama/Llama-3.3-70B-Instruct"},
+    {"id": "deepseek-ai/DeepSeek-R1-0528"},
+    {"id": "moonshotai/Kimi-K2-Instruct-0905"},
+    {"id": "deepseek-ai/DeepSeek-V3-0324"}
   ],
   "success": true
 };
@@ -46,7 +45,7 @@ async function onStart({ req, res }) {
     const availModels = models.data.map(m => m.id);
     return res.status(400).json({
       error: "Please provide 'query', 'uid' and 'model'.",
-      example: "/typegpt?query=hi&uid=69&model=deepseek-v3.1",
+      example: "/typegpt?query=hi&uid=69&model=deepseek-ai/DeepSeek-V3.1",
       avail_models: availModels
     });
   }
@@ -78,7 +77,8 @@ async function onStart({ req, res }) {
           "sec-ch-ua-mobile": "?1",
           "sec-ch-ua-model": "\"SM-A057F\"",
           "sec-ch-ua-platform": "\"Android\"",
-          "sec-ch-ua-platform-version": "\"15.0.0\""
+          "sec-ch-ua-platform-version": "\"15.0.0\"",
+          "Referer": "https://chat.typegpt.net/"
         },
         responseType: 'stream'
       }

@@ -5,7 +5,7 @@ module.exports = {
     name: "Spotify Downloader V2",
     version: "1.0.0",
     description: "Download Spotify songs",
-    author: "rapido",
+    author: "RTM",
     path: "/spdlv2?url=",
     method: "get",
     category: "downloader"
@@ -55,6 +55,9 @@ module.exports = {
 
       const data = response.data.data;
       
+      const { title, downloadLink } = data;
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(downloadLink)}&title=${encodeURIComponent(title)}`;
+
       res.json({
         success: true,
         id: data.id,
@@ -63,7 +66,7 @@ module.exports = {
         album: data.album,
         cover: data.cover,
         releaseDate: data.releaseDate,
-        downloadLink: data.downloadLink
+        url: proxyUrl
       });
       
     } catch (error) {

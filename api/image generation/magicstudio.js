@@ -4,7 +4,7 @@ const { URLSearchParams } = require('url');
 const meta = {
     name: "Magic Studio",
     version: "1.0.0",
-    author: "rapido",
+    author: "RTM",
     category: "image generation",
     method: "GET",
     path: "/magic?prompt=cat"

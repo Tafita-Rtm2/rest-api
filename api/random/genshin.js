@@ -5,7 +5,7 @@ module.exports = {
 		name: "Genshin Impact Edit",
 		version: "1.0.0",
 		description: "Get random Genshin Impact TikTok videos",
-		author: "rapido",
+		author: "RTM",
 		path: "/genshin",
 		method: "get",
 		category: "random"

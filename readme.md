@@ -1,6 +1,6 @@
 ## Rapido Rest API (open source edition)
 
-> Yow! rapido rest API template? yeah finally it's here.
+> Yow! RTM rest API template? yeah finally it's here.
 
 ## Features:
 
@@ -18,7 +18,7 @@ Installing packages:
 ```bash
 npm install
 ```
-credits: **rapido and OwnirsV2 Company**
+credits: **RTM and OwnirsV2 Company**
 
 
 

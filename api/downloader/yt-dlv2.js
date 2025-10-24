@@ -5,7 +5,7 @@ module.exports = {
     name: "YouTube Downloader V2",
     version: "1.0.0",
     description: "Download YouTube videos",
-    author: "rapido",
+    author: "RTM",
     path: "/ytdl-v2?url=",
     method: "get",
     category: "downloader"
@@ -22,17 +22,24 @@ module.exports = {
       if (response.data.progress_url) {
         const progressResponse = await axios.get(response.data.progress_url);
         if (progressResponse.data.download_url) {
+          const title = response.data.title;
+          const proxyUrl = `/api/proxy?url=${encodeURIComponent(progressResponse.data.download_url)}&title=${encodeURIComponent(title)}`;
           return res.json({
-            title: response.data.title,
+            title: title,
             thumbnail: response.data.info.image,
-            download_url: progressResponse.data.download_url });
+            url: proxyUrl
+          });
         }
       }
       
       if (response.data.download_url) {
-        return res.json({ title: response.data.info.title,
-            thumbnail: response.data.info.image,
-            download_url: progressResponse.data.download_url });
+        const title = response.data.info.title;
+        const proxyUrl = `/api/proxy?url=${encodeURIComponent(response.data.download_url)}&title=${encodeURIComponent(title)}`;
+        return res.json({
+          title: title,
+          thumbnail: response.data.info.image,
+          url: proxyUrl
+        });
       }
     } catch (error) {
       res.json({ error: error.message });

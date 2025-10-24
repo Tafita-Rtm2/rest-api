@@ -4,7 +4,7 @@ const meta = {
   name: "Threads Downloader",
   version: "1.0.0",
   description: "API to download Threads videos",
-  author: "rapido",
+  author: "RTM",
   method: "get",
   category: "downloader",
   path: "/threadsdl?url=https://www.threads.net/@username/post/123"
@@ -37,10 +37,14 @@ async function onStart({ res, req }) {
     
     if (!data.videoUrl || !data.imgUrl) return res.json({ error: "Failed to fetch video data" });
     
+    const title = "threads_video";
+    const proxyUrl = `/api/proxy?url=${encodeURIComponent(data.videoUrl)}&title=${encodeURIComponent(title)}`;
+
     return res.json({
-      video_url: data.videoUrl,
-      thumbnail: data.imgUrl
-        });
+      url: proxyUrl,
+      thumbnail: data.imgUrl,
+      title: title
+    });
   } catch (error) {
     return res.json({ error: error.message });
   }

@@ -5,7 +5,7 @@ const meta = {
   name: "Catbox Uploader",
   version: "1.0.0",
   description: "Upload files to Catbox.moe",
-  author: "rapido",
+  author: "RTM",
   method: "get",
   category: "tools",
   path: "/catbox?file_link="

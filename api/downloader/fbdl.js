@@ -4,7 +4,7 @@ const meta = {
   name: "Facebook Downloader",
   version: "1.0.0",
   description: "API to download Facebook videos",
-  author: "rapido",
+  author: "RTM",
   method: "get",
   category: "downloader",
   path: "/fbdl?url=https://www.facebook.com/share/v/12JgNuM1RcF/"

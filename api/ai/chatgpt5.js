@@ -49,7 +49,7 @@ async function onStart({ req, res }) {
 
     messages.push(userMessage);
 
-    const response = await axios.post('https://gpt.tiptopuni.com/api/openai/v1/chat/completions',
+    const response = await axios.post('https://gpt.tiptopuni.com/api/siliconflow/v1/chat/completions',
       {
         model,
         messages,

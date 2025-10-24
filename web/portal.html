@@ -743,45 +743,22 @@
       });
 
       const videoDownloadForm = document.getElementById('video-download-form');
-      const downloadResult = document.getElementById('download-result');
-      const downloadStatus = document.getElementById('download-status');
-      const downloadLink = document.getElementById('download-link');
 
-      videoDownloadForm.addEventListener('submit', async (e) => {
+      videoDownloadForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
         const formData = new FormData(videoDownloadForm);
         const url = formData.get('url');
         const quality = formData.get('quality');
-        const submitButton = videoDownloadForm.querySelector('button[type="submit"]');
 
-        // Show loading state
-        submitButton.disabled = true;
-        submitButton.textContent = 'Processing...';
-        downloadResult.classList.remove('hidden');
-        downloadStatus.textContent = 'Fetching download link, please wait...';
-        downloadLink.classList.add('hidden');
-
-        try {
-            const response = await fetch(`/api/video-dl?url=${encodeURIComponent(url)}&quality=${quality}`);
-            const data = await response.json();
-
-            if (data.status) {
-                downloadStatus.textContent = 'Your download is ready!';
-                downloadLink.href = data.download_url;
-                downloadLink.classList.remove('hidden');
-                // Automatically click the link to start the download
-                downloadLink.click();
-            } else {
-                downloadStatus.textContent = `Error: ${data.error || 'Could not retrieve download link.'}`;
-            }
-        } catch (error) {
-            downloadStatus.textContent = 'An unexpected error occurred. Please try again later.';
-        } finally {
-            // Restore button state
-            submitButton.disabled = false;
-            submitButton.textContent = 'Download Video';
+        let apiUrl = '';
+        if (url.includes('facebook.com') || url.includes('fb.watch')) {
+          apiUrl = `/api/fbdl?url=${encodeURIComponent(url)}`;
+        } else {
+          apiUrl = `/api/video-dl?url=${encodeURIComponent(url)}&quality=${quality}`;
         }
+
+        window.location.href = apiUrl;
       });
     });
   </script>

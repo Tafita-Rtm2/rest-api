@@ -50,17 +50,23 @@ async function onStart({ res, req }) {
     const titleMatch = processedData.match(/<meta\sname="description"\scontent="(.*?)"/);
 
     if (hdMatch && hdMatch[1]) {
-      const result = {
-        url: hdMatch && hdMatch[1] ? parseString(hdMatch[1]) : "",
-        thumbnail: thumbMatch && thumbMatch[1] ? parseString(thumbMatch[1]) : "",
-        title: titleMatch && titleMatch[1] ? parseString(titleMatch[1]) : ""
-      };
-      return res.json(result);
+      const videoUrl = parseString(hdMatch[1]);
+      const title = titleMatch && titleMatch[1] ? parseString(titleMatch[1]) : "facebook_video";
+
+      const videoResponse = await axios({
+        method: 'get',
+        url: videoUrl,
+        responseType: 'stream'
+      });
+
+      res.setHeader('Content-Disposition', `attachment; filename="${title}.mp4"`);
+      videoResponse.data.pipe(res);
+
     } else {
-      return res.json({ error: "Video not found" });
+      return res.status(404).send("Video not found");
     }
   } catch (error) {
-    return res.json({ error: error.message });
+    return res.status(500).send(`An error occurred while trying to download the video: ${error.message}`);
   }
 }
 

@@ -2,59 +2,54 @@ const axios = require('axios');
 const conversations = new Map();
 
 const meta = {
-  name: 'TypeGPT',
-  path: '/typegpt?query=&uid=&model=&system=',
+  name: 'ChatGPT-5',
+  path: '/chatgpt5?query=&uid=&model=&system=&imgurl=',
   method: 'get',
   category: 'ai',
-  description: ''
+  description: 'AI model that can analyze images.'
 };
 
 const models = {
   "data": [
-    {"id": "deepseek-ai/DeepSeek-V3.1"},
-    {"id": "qwen/qwen2.5-7b-instruct/bf-16"},
-    {"id": "Qwen/Qwen3-235B-A22B-Thinking-2507-FP8"},
-    {"id": "Qwen/Qwen3-235B-A22B-Thinking-2507"},
-    {"id": "Qwen/Qwen3-30B-A3B-Instruct-2507"},
-    {"id": "Qwen/Qwen3-30B-A3B-Thinking-2507"},
-    {"id": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8"},
-    {"id": "Qwen/Qwen3-Next-80B-A3B-Thinking"},
-    {"id": "Qwen/Qwen3-Next-80B-A3B-Instruct"},
     {"id": "gpt-5"},
-    {"id": "gpt-5(openai)"},
-    {"id": "zai-org/GLM-4.5-Air-FP8"},
-    {"id": "deepseek-ai/DeepSeek-V3.2-Exp"},
-    {"id": "NAI/Uncensored-R1"},
-    {"id": "openai/gpt-oss-20b"},
-    {"id": "openai/gpt-oss-120b"},
-    {"id": "meta-llama/llama-3.1-8b-instruct/fp-16"},
-    {"id": "mistralai/mistral-nemo-12b-instruct/fp-8"},
-    {"id": "deepseek-ai/DeepSeek-R1-Distill-Llama-70B"},
-    {"id": "meta-llama/Llama-3.3-70B-Instruct"},
-    {"id": "deepseek-ai/DeepSeek-R1-0528"},
-    {"id": "moonshotai/Kimi-K2-Instruct-0905"},
-    {"id": "deepseek-ai/DeepSeek-V3-0324"}
+    {"id": "gpt-5(Azure)"}
   ],
   "success": true
 };
 
 async function onStart({ req, res }) {
-  const { query, uid, model, system } = req.query;
+  const { query, uid, model, system, imgurl } = req.query;
 
   if (!query || !uid || !model) {
     const availModels = models.data.map(m => m.id);
     return res.status(400).json({
       error: "Please provide 'query', 'uid' and 'model'.",
-      example: "/typegpt?query=hi&uid=69&model=deepseek-ai/DeepSeek-V3.1",
+      example: "/chatgpt5?query=hi&uid=69&model=gpt-5 (OpenAI)",
       avail_models: availModels
     });
   }
 
   try {
     let messages = conversations.get(uid) || [];
-    if (system) messages.unshift({ role: 'system', content: system });
-    messages.push({ role: 'user', content: query });
-    const response = await axios.post('https://gpt.tiptopuni.com/api/openai/v1/chat/completions', 
+    if (system && messages.length === 0) {
+      messages.push({ role: 'system', content: system });
+    }
+
+    const userMessage = {
+      role: 'user',
+      content: query
+    };
+
+    if (imgurl) {
+      userMessage.content = [
+        { type: 'text', text: query },
+        { type: 'image_url', image_url: { url: imgurl } }
+      ];
+    }
+
+    messages.push(userMessage);
+
+    const response = await axios.post('https://gpt.tiptopuni.com/api/openai/v1/chat/completions',
       {
         model,
         messages,
@@ -78,15 +73,14 @@ async function onStart({ req, res }) {
           "sec-ch-ua-model": "\"SM-A057F\"",
           "sec-ch-ua-platform": "\"Android\"",
           "sec-ch-ua-platform-version": "\"15.0.0\"",
-          "Referer": "https://chat.typegpt.net/"
+          "Referer": "https://gpt.tiptopuni.com/"
         },
         responseType: 'stream'
       }
     );
 
     let fullResponse = '';
-    const chunks = [];
-
+    
     response.data.on('data', chunk => {
       const lines = chunk.toString().split('\n').filter(line => line.trim());
       
@@ -100,7 +94,6 @@ async function onStart({ req, res }) {
             const content = parsed.choices[0]?.delta?.content;
             if (content) {
               fullResponse += content;
-              chunks.push(content);
             }
           } catch (e) {}
         }

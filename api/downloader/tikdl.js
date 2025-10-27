@@ -46,14 +46,21 @@ module.exports = {
 
       const extractMatch = (regex, fallback = "Unknown") => html.match(regex)?.[1] ?? fallback;
 
+      const downloadLink = extractMatch(/href="(https:\/\/tikcdn\.io\/ssstik\/[^\"]+)"/, "No download link found.");
+      const mp3DownloadLink = extractMatch(/<a href="(https:\/\/tikcdn\.io\/ssstik\/[^\"]+)"[^>]*class="pure-button[^>]*download_link music[^>]*">/, "No MP3 download link found.");
+      const title = extractMatch(/<p class="maintext">(.*?)<\/p>/, "tiktok_video");
+
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(downloadLink)}&title=${encodeURIComponent(title)}`;
+      const mp3ProxyUrl = `/api/proxy?url=${encodeURIComponent(mp3DownloadLink)}&title=${encodeURIComponent(title)}_audio`;
+
       const result = {
         author: extractMatch(/<h2>(.*?)<\/h2>/),
         profilePic: extractMatch(/<img class="result_author" src="(.*?)"/, "No profile picture found"),
-        description: extractMatch(/<p class="maintext">(.*?)<\/p>/, "No description"),
+        description: title,
         likes: extractMatch(/<div>\s*(\d+)\s*<\/div>\s*<\/div>\s*<\/div>\s*<div class="d-flex flex-1 align-items-center justify-content-center">/, "0"),
         comments: extractMatch(/<div class="d-flex flex-1 align-items-center justify-content-center">\s*<svg[^>]*><\/svg>\s*<div>\s*(\d+)\s*<\/div>/, "0"),
-        downloadLink: extractMatch(/href="(https:\/\/tikcdn\.io\/ssstik\/[^\"]+)"/, "No download link found."),
-        mp3DownloadLink: extractMatch(/<a href="(https:\/\/tikcdn\.io\/ssstik\/[^\"]+)"[^>]*class="pure-button[^>]*download_link music[^>]*">/, "No MP3 download link found."),
+        downloadLink: proxyUrl,
+        mp3DownloadLink: mp3ProxyUrl,
       };
 
       res.json(result);

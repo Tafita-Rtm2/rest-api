@@ -55,11 +55,14 @@ async function downloadTrack(url) {
         ? `https://api.fabdl.com${progressResult.download_url}`
         : null;
 
+      const title = track.name;
+      const proxyUrl = downloadUrl ? `/api/proxy?url=${encodeURIComponent(downloadUrl)}&title=${encodeURIComponent(title)}` : null;
+
       processedTracks.push({
         name: track.name,
         artists: track.artists,
         duration: formatDuration(track.duration_ms),
-        download_url: downloadUrl
+        download_url: proxyUrl
       });
     }
 

@@ -2,13 +2,14 @@ const axios = require('axios');
 const conversations = new Map();
 
 const meta = {
-  name: 'LMArena-Proxy',
-  path: '/api?query=&uid=&model=&system=',
+  name: 'LMArena-Direct',
+  path: '/lmarena?query=&uid=&model=&system=&imgurl=',
   method: 'get',
   category: 'ai',
-  description: 'Proxy for LMArena models'
+  description: 'Direct chat with experimental models like GPT-5.2 and Gemini 3.'
 };
 
+// Liste des modèles basée sur ta capture d'écran 5
 const models = {
   "data": [
     {"id": "gpt-5.2-high"},
@@ -26,44 +27,63 @@ const models = {
 };
 
 async function onStart({ req, res }) {
-  const { query, uid, model, system } = req.query;
+  const { query, uid, model, system, imgurl } = req.query;
 
-  // Basic validation
-  if (!query || !model) {
+  // Si l'utilisateur n'envoie pas de modèle, on met gpt-5.2-high par défaut
+  const selectedModel = model || "gpt-5.2-high";
+
+  if (!query || !uid) {
     const availModels = models.data.map(m => m.id);
     return res.status(400).json({
-      error: "Please provide 'query' and 'model'.",
-      example: "/api?query=hello&uid=123&model=gemini-3-pro",
+      error: "Please provide 'query', 'uid'. Model is optional.",
+      example: "/lmarena?query=hello&uid=123&model=gpt-5.2-high",
       avail_models: availModels
     });
   }
 
-  // Generate a temporary ID if none provided
-  const userId = uid || 'default-user';
-
   try {
-    let messages = conversations.get(userId) || [];
-    if (system) messages.unshift({ role: 'system', content: system });
-    messages.push({ role: 'user', content: query });
+    let messages = conversations.get(uid) || [];
+    if (system && messages.length === 0) {
+      messages.push({ role: 'system', content: system });
+    }
 
-    // NOTE: lmarena.ai uses complex protection. 
-    // This request mimics the headers, but Cloudflare might still challenge it.
-    const response = await axios.post('https://lmarena.ai/api/chat/completions', 
+    const userMessage = {
+      role: 'user',
+      content: query
+    };
+
+    if (imgurl) {
+      userMessage.content = [
+        { type: 'text', text: query },
+        { type: 'image_url', image_url: { url: imgurl } }
+      ];
+    }
+
+    messages.push(userMessage);
+
+    // Tentative de connexion vers LM Arena
+    // Note: LM Arena utilise souvent des protections Cloudflare strictes.
+    const response = await axios.post('https://lmarena.ai/api/chat/completions', // Endpoint supposé
       {
-        model: model,
-        messages: messages,
+        model: selectedModel,
+        messages,
         stream: true,
-        temperature: 0.7,
-        top_p: 0.9
+        temperature: 0.7, // Ajusté pour le mode créatif
+        presence_penalty: 0,
+        frequency_penalty: 0,
+        top_p: 1
       },
       {
         headers: {
           "Content-Type": "application/json",
-          "Origin": "https://lmarena.ai",
-          "Referer": "https://lmarena.ai/",
-          "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36",
-          "accept": "text/event-stream", // Important for streaming
-          "accept-language": "en-US,en;q=0.9"
+          "accept": "text/event-stream", // LM Arena utilise souvent SSE
+          "accept-language": "en-US,en;q=0.9",
+          "origin": "https://lmarena.ai",
+          "referer": "https://lmarena.ai/", // IMPORTANT: Le referer doit être lmarena
+          "sec-ch-ua": "\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\"",
+          "sec-ch-ua-mobile": "?1",
+          "sec-ch-ua-platform": "\"Android\"",
+          "user-agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
         },
         responseType: 'stream'
       }
@@ -71,24 +91,22 @@ async function onStart({ req, res }) {
 
     let fullResponse = '';
 
-    // Handle the stream
     response.data.on('data', chunk => {
       const lines = chunk.toString().split('\n').filter(line => line.trim());
-      
+
       for (const line of lines) {
         if (line.startsWith('data: ')) {
           const data = line.slice(6);
           if (data === '[DONE]') return;
-          
+
           try {
             const parsed = JSON.parse(data);
-            // Adapt content extraction to standard OpenAI format
-            const content = parsed.choices?.[0]?.delta?.content || parsed.text || "";
+            const content = parsed.choices[0]?.delta?.content;
             if (content) {
               fullResponse += content;
             }
           } catch (e) {
-             // Ignore parse errors from keep-alive packets
+            // Ignorer les erreurs de parsing JSON partiel
           }
         }
       }
@@ -96,28 +114,21 @@ async function onStart({ req, res }) {
 
     response.data.on('end', () => {
       messages.push({ role: 'assistant', content: fullResponse });
-      conversations.set(userId, messages);
-      
+      conversations.set(uid, messages);
+
       res.json({
-        result: fullResponse || "No response content received (Check Model ID)",
-        model_used: model,
-        success: true
+        result: fullResponse,
+        model: selectedModel,
+        avail_models: models.data.map(m => m.id)
       });
     });
 
   } catch (error) {
-    console.error("Proxy Error:", error.message);
-    
-    // If blocked by Cloudflare (403), we show a helpful message
-    if (error.response && error.response.status === 403) {
-       return res.status(403).json({
-         error: "Security Blocked",
-         message: "LMArena blocked this automated request. They require a real browser."
-       });
-    }
-
+    // Gestion d'erreur améliorée pour voir ce qui ne va pas
+    console.error("Erreur LM Arena:", error.message);
     res.status(500).json({
-      error: error.message,
+      error: "Failed to connect to LM Arena. Note: This site has heavy Cloudflare protection.",
+      details: error.message,
       avail_models: models.data.map(m => m.id)
     });
   }

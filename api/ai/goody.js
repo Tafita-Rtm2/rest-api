@@ -1,86 +1,99 @@
+require('dotenv').config();
 const axios = require('axios');
 
+const conversations = new Map();
+
 const meta = {
-    name: "goody",
-    version: "1.0.0",
-    author: "RTM",
-    description: "Generate responses using GoodyAI",
-    method: "get",
-    category: "ai",
-    path: "/goody?q="
+  name: 'HuggingFaceGPT',
+  path: '/huggingface?query=&uid=&model=&system=',
+  method: 'get',
+  category: 'ai',
+  description: 'Hugging Face AI Proxy'
 };
 
-const font = {
-    bold: (text) => {
-        const boldMap = {
-            'a': '𝗮', 'b': '𝗯', 'c': '𝗰', 'd': '𝗱', 'e': '𝗲', 'f': '𝗳', 'g': '𝗴', 'h': '𝗵', 'i': '𝗶', 'j': '𝗷',
-            'k': '𝗸', 'l': '𝗹', 'm': '𝗺', 'n': '𝗻', 'o': '𝗼', 'p': '𝗽', 'q': '𝗾', 'r': '𝗿', 's': '𝘀', 't': '𝘁',
-            'u': '𝘂', 'v': '𝘃', 'w': '𝘄', 'x': '𝘅', 'y': '𝘆', 'z': '𝘇',
-            'A': '𝗔', 'B': '𝗕', 'C': '𝗖', 'D': '𝗗', 'E': '𝗘', 'F': '𝗙', 'G': '𝗚', 'H': '𝗛', 'I': '𝗜', 'J': '𝗝',
-            'K': '𝗞', 'L': '𝗟', 'M': '𝗠', 'N': '𝗡', 'O': '𝗢', 'P': '𝗣', 'Q': '𝗤', 'R': '𝗥', 'S': '𝗦', 'T': '𝗧',
-            'U': '𝗨', 'V': '𝗩', 'W': '𝗪', 'X': '𝗫', 'Y': '𝗬', 'Z': '𝗭',
-            '0': '𝟬', '1': '𝟭', '2': '𝟮', '3': '𝟯', '4': '𝟰', '5': '𝟱', '6': '𝟲', '7': '𝟳', '8': '𝟴', '9': '𝟵'
-        };
-        return text.split('').map(char => boldMap[char] || char).join('');
-    }
+const models = {
+  success: true,
+  data: [
+    { id: "meta-llama/Meta-Llama-3-8B-Instruct" },
+    { id: "meta-llama/Meta-Llama-3-70B-Instruct" },
+    { id: "mistralai/Mistral-7B-Instruct-v0.3" },
+    { id: "Qwen/Qwen2.5-7B-Instruct" },
+    { id: "Qwen/Qwen2.5-14B-Instruct" },
+    { id: "google/gemma-2-9b-it" }
+  ]
 };
 
-function parseSSEResponse(sseData) {
-    let fullMessage = "";
-    const lines = sseData.split('\n\n');
-    
-    for (const line of lines) {
-        if (line.startsWith('event: message')) {
-            const dataMatch = line.match(/data: (.*)/);
-            if (dataMatch && dataMatch[1]) {
-                try {
-                    const jsonData = JSON.parse(dataMatch[1]);
-                    if (jsonData.content !== undefined) {
-                        fullMessage += jsonData.content;
-                    }
-                } catch (e) {
-                    continue;
-                }
-            }
-        }
-    }
-    return fullMessage;
-}
+async function onStart({ req, res }) {
+  const { query, uid, model, system } = req.query;
 
-async function onStart({ res, req }) {
-    const query = req.query.q;
-    if (!query) {
-        return res.json({ error: "No prompt provided" });
+  if (!query || !uid || !model) {
+    return res.status(400).json({
+      error: "Missing query, uid or model",
+      example: "/huggingface?query=hello&uid=1&model=meta-llama/Meta-Llama-3-8B-Instruct",
+      avail_models: models.data.map(m => m.id)
+    });
+  }
+
+  if (!models.data.find(m => m.id === model)) {
+    return res.status(400).json({
+      error: "Invalid model",
+      avail_models: models.data.map(m => m.id)
+    });
+  }
+
+  try {
+    let messages = conversations.get(uid) || [];
+
+    if (system && messages.length === 0) {
+      messages.push({ role: "system", content: system });
     }
 
-    const headers = {
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36',
-        'Content-Type': 'text/plain',
-        'Accept': '*/*',
-        'Origin': 'https://www.goody2.ai',
-        'Referer': 'https://www.goody2.ai/chat'
-    };
+    messages.push({ role: "user", content: query });
 
-    try {
-        const response = await axios.post("https://www.goody2.ai/send", 
-            JSON.stringify({ "message": query, "debugParams": null }), 
-            { headers, responseType: 'text' }
-        );
+    const response = await axios.post(
+      `https://api-inference.huggingface.co/models/${model}`,
+      {
+        inputs: messages.map(m => `${m.role}: ${m.content}`).join('\n'),
+        parameters: {
+          temperature: 0.6,
+          top_p: 0.9,
+          max_new_tokens: 1024
+        },
+        stream: true
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.HF_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        responseType: 'stream'
+      }
+    );
 
-        const fullText = parseSSEResponse(response.data);
-        const formattedText = fullText.replace(/\*\*(.*?)\*\*/g, (_, text) => font.bold(text));
-        
-        return res.json({
-            response: formattedText,
-            author: meta.author
-        });
+    let fullResponse = '';
 
-    } catch (error) {
-        return res.json({ 
-            error: "Service unavailable",
-            details: error.message
-        });
-    }
+    response.data.on('data', chunk => {
+      const text = chunk.toString();
+      fullResponse += text;
+    });
+
+    response.data.on('end', () => {
+      messages.push({ role: "assistant", content: fullResponse });
+      conversations.set(uid, messages);
+
+      res.json({
+        result: fullResponse,
+        model,
+        avail_models: models.data.map(m => m.id)
+      });
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+      avail_models: models.data.map(m => m.id)
+    });
+  }
 }
 
 module.exports = { meta, onStart };
